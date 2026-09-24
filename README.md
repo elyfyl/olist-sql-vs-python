@@ -11,7 +11,7 @@ Kullandığım veri seti, Brezilya'daki birden fazla pazaryerinde gerçekleşen 
 
 ## 🛠️ Adım 1: Çalışma Ortamını Hazırlama ve Veri Aktarımı (Data Ingestion)
 
-Elimizdeki ham CSV (virgülle ayrılmış değerler) dosyalarını doğrudan analiz etmek yerine, onları SQL ile sorgulayabileceğimiz ilişkisel bir veritabanına aktardık. 
+Elimizdeki CSV dosyalarını doğrudan analiz etmek yerine, onları SQL ile sorgulayabileceğimiz ilişkisel bir veritabanına aktardık. 
 
 * **Neden Yaptık?** SQL yazabilmek için verilerin bir veritabanında durması gerekir. Normalde PostgreSQL gibi sistemler kurulur, ancak biz kurulum gerektirmeyen, doğrudan kodun içinde çalışan ve analitik işlemler için çok hızlı olan Local Database olarak **DuckDB** kullandık.
 * **Nasıl Yaptık?** Python içerisinden DuckDB'ye `read_csv_auto` fonksiyonunu kullanarak bir SQL komutu gönderdik. Bu sayede CSV'lerin içindeki tarihleri, sayıları ve metinleri otomatik algılayıp `customers`, `orders` ve `order_items` gibi temiz, ilişkisel tablolar oluşturduk.
@@ -28,8 +28,10 @@ SQL kullanarak veritabanına sorduğumuz sorunun mantığı şu şekildeydi:
 * **WHERE (Filtreleme):** Sadece `delivered` (teslim edildi) statüsündeki siparişleri hesaba kattık.
 * **DATE_TRUNC (Tarih Yuvarlama):** Karmaşık saat verilerini `STRFTIME` ile YYYY-MM (Yıl-Ay) formatına yuvarlayıp gruplanabilir hale getirdik.
 * **GROUP BY & SUM:** Aylara göre gruplayıp fiyatları topladık.
-
-![SQL Aylık Ciro Çıktısı](images/sql_aylik_ciro_cikti.png)
+  
+<p align="center">
+  <img src="images/sql_aylik_ciro_cikti.png" width="450">
+</p>
 
 ### Python (Pandas) Yaklaşımı
 SQL'i neden Python içinde çalıştırdık? Çünkü analitik senaryolarda veritabanından SQL ile süzülen veri, görselleştirme için Python'a aktarılır. Bu köprüyü kurmak güçlü bir endüstri standardıdır. Python tarafında aynı sonucu şu mantıkla elde ettik:
@@ -37,7 +39,9 @@ SQL'i neden Python içinde çalıştırdık? Çünkü analitik senaryolarda veri
 * SQL'deki `DATE_TRUNC` kavramının Python'daki karşılığı olan `to_period('M')` ile tarihleri aylara böldük.
 * `groupby()` ve `sum()` ile toplam ciroyu hesapladık.
 
-![Python Aylık Ciro Çıktısı](images/python_aylik_ciro_cikti.png)
+<p align="center">
+  <img src="images/python_aylik_ciro_cikti.png" width="450">
+</p>
 
 ---
 
@@ -51,9 +55,14 @@ Hem SQL hem de Python'da aynı kurguyu uyguladık:
 2. **Gruplama:** Verileri `product_category_name` (kategori adı) bazında kümeler haline getirdik.
 3. **Sayma:** Her bir kategori kümesinin içinde kaç adet satılmış ürün olduğunu saydık (SQL'de `COUNT`, Python'da `.size()`).
 4. **Sıralama:** Sonuçları en çok satandan en az satana doğru sıraladık (`ORDER BY DESC` / `sort_values(ascending=False)`) ve sadece en üstteki 10 satırı getirdik.
+   
+<p align="center">
+  <img src="images/sql_kategori_cikti.png" width="450">
+</p>
 
-![SQL Kategori Çıktısı](images/sql_kategori_cikti.png)
-![Python Kategori Çıktısı](images/python_kategori_cikti.png)
+<p align="center">
+  <img src="images/python_kategori_cikti.png" width="450">
+</p>
 
 ---
 *Bu proje, veri analitiği süreçlerinde SQL'in filtreleme/birleştirme gücü ile Python'ın esnekliğini aynı çatı altında kullanma pratiği olarak geliştirilmiştir.*
